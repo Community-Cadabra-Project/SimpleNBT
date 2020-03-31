@@ -6,26 +6,14 @@ import org.cadabra.nbt.io.NBTOutputStream;
 import java.io.IOException;
 import java.util.StringJoiner;
 
-public class NBTInteger  extends NBTObject<Integer> {
+public final class NBTInteger extends NBTObject {
 
     private final static TagType TAG = TagType.TAG_INT;
 
     private int val = 0;
 
-    private NBTInteger(String name) {
+    NBTInteger(String name) {
         super(TAG.getID(), name);
-    }
-
-    private NBTInteger() {
-        super(TAG.getID());
-    }
-
-    public static NBTInteger unnamed() {
-        return new NBTInteger();
-    }
-
-    public static NBTInteger named(String name) {
-        return new NBTInteger(name);
     }
 
     public int get() {
@@ -39,22 +27,12 @@ public class NBTInteger  extends NBTObject<Integer> {
     }
 
     @Override
-    public Integer getValue() {
-        return get();
-    }
-
-    @Override
-    public Integer setValue(Integer e) {
-        return set(e);
-    }
-
-    @Override
-    public void writeBody(NBTOutputStream out) throws IOException {
+    protected void writeBody(NBTOutputStream out) throws IOException {
         out.writeInt(val);
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         val = in.readInt();
     }
 
@@ -62,7 +40,7 @@ public class NBTInteger  extends NBTObject<Integer> {
     public String toString() {
         return new StringJoiner(", ", NBTInteger.class.getSimpleName() + "[", "]")
                 .add("val=" + val)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

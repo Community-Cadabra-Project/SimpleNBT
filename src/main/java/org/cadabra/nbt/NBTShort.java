@@ -6,26 +6,14 @@ import org.cadabra.nbt.io.NBTOutputStream;
 import java.io.IOException;
 import java.util.StringJoiner;
 
-public class NBTShort extends NBTObject<Short> {
+public final class NBTShort extends NBTObject {
 
     private final static TagType TAG = TagType.TAG_SHORT;
 
     private short val = 0;
 
-    private NBTShort(String name) {
+    NBTShort(String name) {
         super(TAG.getID(), name);
-    }
-
-    private NBTShort() {
-        super(TAG.getID());
-    }
-
-    public static NBTShort unnamed() {
-        return new NBTShort();
-    }
-
-    public static NBTShort named(String name) {
-        return new NBTShort(name);
     }
 
     public short get() {
@@ -39,22 +27,12 @@ public class NBTShort extends NBTObject<Short> {
     }
 
     @Override
-    public Short getValue() {
-        return get();
-    }
-
-    @Override
-    public Short setValue(Short e) {
-        return set(e);
-    }
-
-    @Override
-    public void writeBody(NBTOutputStream out) throws IOException {
+    protected void writeBody(NBTOutputStream out) throws IOException {
         out.writeShort(val);
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         val = in.readShort();
     }
 
@@ -62,7 +40,7 @@ public class NBTShort extends NBTObject<Short> {
     public String toString() {
         return new StringJoiner(", ", NBTShort.class.getSimpleName() + "[", "]")
                 .add("val=" + val)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

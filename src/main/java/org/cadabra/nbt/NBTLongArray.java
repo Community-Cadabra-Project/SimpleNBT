@@ -11,33 +11,19 @@ import java.util.StringJoiner;
 
 import static org.cadabra.nbt.TagType.TAG_BYTE_ARRAY;
 
-public class NBTLongArray extends NBTObject<List<Long>> {
+public final class NBTLongArray extends NBTObject {
 
     private List<Long> array = new ArrayList<>();
 
-    private NBTLongArray() {
-        super(TAG_BYTE_ARRAY.getID());
-    }
-
-    private NBTLongArray(String name) {
+    NBTLongArray(String name) {
         super(TAG_BYTE_ARRAY.getID(), name);
     }
 
-    public static NBTLongArray unnamed() {
-        return new NBTLongArray();
-    }
-
-    public static NBTLongArray named(String name) {
-        return new NBTLongArray(name);
-    }
-
-    @Override
-    List<Long> getValue() {
+    List<Long> getList() {
         return array;
     }
 
-    @Override
-    List<Long> setValue(List<Long> e) {
+    List<Long> setList(List<Long> e) {
         Objects.requireNonNull(e);
         List<Long> oldArr = array;
         array = e;
@@ -54,10 +40,8 @@ public class NBTLongArray extends NBTObject<List<Long>> {
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         int size = in.readInt();
-        if (size == 0)
-            return;
         ArrayList<Long> array = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             array.add(in.readLong());
@@ -69,7 +53,7 @@ public class NBTLongArray extends NBTObject<List<Long>> {
     public String toString() {
         return new StringJoiner(", ", NBTLongArray.class.getSimpleName() + "[", "]")
                 .add("array=" + array)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

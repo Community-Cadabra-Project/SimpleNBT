@@ -11,33 +11,19 @@ import java.util.StringJoiner;
 
 import static org.cadabra.nbt.TagType.TAG_BYTE_ARRAY;
 
-public class NBTIntArray extends NBTObject<List<Integer>> {
+public final class NBTIntArray extends NBTObject {
 
     private List<Integer> array = new ArrayList<>();
 
-    private NBTIntArray() {
-        super(TAG_BYTE_ARRAY.getID());
-    }
-
-    private NBTIntArray(String name) {
+    NBTIntArray(String name) {
         super(TAG_BYTE_ARRAY.getID(), name);
     }
 
-    public static NBTIntArray unnamed() {
-        return new NBTIntArray();
-    }
-
-    public static NBTIntArray named(String name) {
-        return new NBTIntArray(name);
-    }
-
-    @Override
-    List<Integer> getValue() {
+    List<Integer> getList() {
         return array;
     }
 
-    @Override
-    List<Integer> setValue(List<Integer> e) {
+    List<Integer> setList(List<Integer> e) {
         Objects.requireNonNull(e);
         List<Integer> oldArr = array;
         array = e;
@@ -54,10 +40,8 @@ public class NBTIntArray extends NBTObject<List<Integer>> {
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         int size = in.readInt();
-        if (size == 0)
-            return;
         ArrayList<Integer> array = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             array.add(in.readInt());
@@ -69,7 +53,7 @@ public class NBTIntArray extends NBTObject<List<Integer>> {
     public String toString() {
         return new StringJoiner(", ", NBTIntArray.class.getSimpleName() + "[", "]")
                 .add("array=" + array)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

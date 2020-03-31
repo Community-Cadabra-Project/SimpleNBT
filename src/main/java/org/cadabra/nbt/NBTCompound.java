@@ -8,39 +8,14 @@ import java.util.*;
 
 import static org.cadabra.nbt.TagType.*;
 
-public class NBTCompound extends NBTObject<Map<String, NBT>> {
+public class NBTCompound extends NBTObject {
 
     private final static TagType TAG = TAG_COMPOUND;
 
-    private Map<String, NBT> map = new LinkedHashMap<>();
+    private Map<String, NBTObject> map = new LinkedHashMap<>();
 
-    private NBTCompound() {
-        super(TAG.getID());
-    }
-
-    private NBTCompound(String name) {
+    NBTCompound(String name) {
         super(TAG.getID(), name);
-    }
-
-    public static NBTCompound unnamed() {
-        return new NBTCompound();
-    }
-
-    public static NBTCompound named(String name) {
-        return new NBTCompound(name);
-    }
-
-    @Override
-    Map<String, NBT> getValue() {
-        return null;
-    }
-
-    @Override
-    Map<String, NBT> setValue(Map<String, NBT> newMap) {
-        Objects.requireNonNull(newMap);
-        Map<String, NBT> oldMap = map;
-        map = newMap;
-        return oldMap;
     }
 
     public byte getByte(String name) {
@@ -68,19 +43,19 @@ public class NBTCompound extends NBTObject<Map<String, NBT>> {
     }
 
     public List<Byte> getByteArray(String name) {
-        return ((NBTByteArray) getNBTObject(name, TAG_BYTE_ARRAY)).getValue();
+        return ((NBTByteArray) getNBTObject(name, TAG_BYTE_ARRAY)).getList();
     }
 
     public List<Integer> getIntArray(String name) {
-        return ((NBTIntArray) getNBTObject(name, TAG_BYTE_ARRAY)).getValue();
+        return ((NBTIntArray) getNBTObject(name, TAG_BYTE_ARRAY)).getList();
     }
 
     public List<Long> getLongArray(String name) {
-        return ((NBTLongArray) getNBTObject(name, TAG_BYTE_ARRAY)).getValue();
+        return ((NBTLongArray) getNBTObject(name, TAG_BYTE_ARRAY)).getList();
     }
 
     public String getString(String name) {
-        return ((NBTString) getNBTObject(name, TAG_STRING)).getValue();
+        return ((NBTString) getNBTObject(name, TAG_STRING)).getString();
     }
 
     public NBTList getList(String name) {
@@ -124,40 +99,40 @@ public class NBTCompound extends NBTObject<Map<String, NBT>> {
 
     public void putByteArray(String name, ArrayList<Byte> array) {
         NBTByteArray e = (NBTByteArray) getOrCreate(name, TAG_BYTE_ARRAY);
-        e.setValue(array);
+        e.setList(array);
     }
 
     public void putIntArray(String name, ArrayList<Integer> array) {
         NBTIntArray e = (NBTIntArray) getOrCreate(name, TAG_INT_ARRAY);
-        e.setValue(array);
+        e.setList(array);
     }
 
     public void putLongArray(String name, ArrayList<Long> array) {
         NBTLongArray e = (NBTLongArray) getOrCreate(name, TAG_LONG_ARRAY);
-        e.setValue(array);
+        e.setList(array);
     }
 
     public void putString(String name, String val) {
         NBTString e = (NBTString) getOrCreate(name, TAG_STRING);
-        e.setValue(val);
+        e.setString(val);
     }
 
-    public void put(String name, NBT o) {
+    public void put(String name, NBTObject o) {
         putNotNull(map, name, o);
     }
 
-    public NBT remove(String name) {
+    public NBTObject remove(String name) {
         return map.remove(name);
     }
 
-    public NBT remove(String name, TagType t) {
+    public NBTObject remove(String name, TagType t) {
         return remove(name, t.getID());
     }
 
-    public NBT remove(String name, int tagID) {
-        NBT e = remove(name);
+    public NBTObject remove(String name, int tagID) {
+        NBTObject e = remove(name);
         if (Objects.nonNull(e)) {
-            if (e.tagID() == tagID)
+            if (e.getTag() == tagID)
                 return e;
             else {
                 map.put(name, e);
@@ -167,37 +142,37 @@ public class NBTCompound extends NBTObject<Map<String, NBT>> {
             return null;
     }
 
-    private NBT getOrCreate(String name, TagType tag) {
+    private NBTObject getOrCreate(String name, TagType tag) {
         return getOrCreate(name, tag.getID());
     }
 
-    private NBT getOrCreate(String name, int tagID) {
-        NBT o = map.get(name);
-        if (Objects.nonNull(o) && o.tagID() == tagID)
+    private NBTObject getOrCreate(String name, int tagID) {
+        NBTObject o = map.get(name);
+        if (Objects.nonNull(o) && o.getTag() == tagID)
             return o;
         else {
             o = NBTFactory.named(tagID, name);
-            if (o.tagID() != tagID)
-                throw new IllegalArgumentException(differentTags(tagID, o));
+            if (o.getTag() != tagID)
+                throw new IllegalArgumentException("Match name but not tag");
             putNotNullKey(map, name, o);
             return o;
         }
     }
 
-    private void putNotNull(Map<String, NBT> map, String name, NBT o) {
+    private void putNotNull(Map<String, NBTObject> map, String name, NBTObject o) {
         Objects.requireNonNull(o, notNullValue());
         putNotNullKey(map, name, o);
     }
 
-    private void putNotNullKey(Map<String, NBT> map, String name, NBT o) {
+    private void putNotNullKey(Map<String, NBTObject> map, String name, NBTObject o) {
         Objects.requireNonNull(name, notNullKey());
         map.put(name, o);
     }
 
-    private NBT getNBTObject(String name, TagType tag) {
-        NBT o;
+    private NBTObject getNBTObject(String name, TagType tag) {
+        NBTObject o;
         Objects.requireNonNull(o = map.get(name), notFound(name));
-        if (o.tagID() == tag.getID()) {
+        if (o.getTag() == tag.getID()) {
             assert tag.getAttachedClass().isInstance(o);
             return o;
         } else
@@ -222,7 +197,7 @@ public class NBTCompound extends NBTObject<Map<String, NBT>> {
 
     @Override
     public void writeBody(NBTOutputStream out) throws IOException {
-        for (NBT e :
+        for (NBTObject e :
                 map.values()) {
             if (e.isUnnamed())
                 throw new IOException("Objects in compound must have name: " + e);
@@ -232,12 +207,12 @@ public class NBTCompound extends NBTObject<Map<String, NBT>> {
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
-        Map<String, NBT> map = new LinkedHashMap<>();
+    public void readBody(NBTInputStream in) throws IOException {
+        Map<String, NBTObject> map = new LinkedHashMap<>();
         Map.Entry<Byte, String> e = in.readHeadTag();
         do {
-            NBT o = NBTFactory.named(e.getKey(), e.getValue());
-            o.read(in);
+            NBTObject o = NBTFactory.named(e.getKey(), e.getValue());
+            o.readBody(in);
             map.put(e.getValue(), o);
             e = in.readHeadTag();
         } while (e.getKey() > TAG_END.getID());
@@ -248,7 +223,7 @@ public class NBTCompound extends NBTObject<Map<String, NBT>> {
     public String toString() {
         return new StringJoiner(", ", NBTCompound.class.getSimpleName() + "[", "]")
                 .add("map=" + map)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

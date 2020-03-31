@@ -7,35 +7,21 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public class NBTString extends NBTObject<String> {
+public final class NBTString extends NBTObject {
 
     private final static TagType TAG = TagType.TAG_STRING;
 
     private String val = "";
 
-    private NBTString(String name) {
+    NBTString(String name) {
         super(TAG.getID(), name);
     }
 
-    private NBTString() {
-        super(TAG.getID());
-    }
-
-    public static NBTString unnamed() {
-        return new NBTString();
-    }
-
-    public static NBTString named(String name) {
-        return new NBTString(name);
-    }
-
-    @Override
-    public String getValue() {
+    public String getString() {
         return val;
     }
 
-    @Override
-    public String setValue(String newVal) {
+    public String setString(String newVal) {
         Objects.requireNonNull(newVal);
         String oldVal = val;
         val = newVal;
@@ -43,13 +29,12 @@ public class NBTString extends NBTObject<String> {
     }
 
     @Override
-    public void writeBody(NBTOutputStream out) throws IOException {
-
+    protected void writeBody(NBTOutputStream out) throws IOException {
         out.writeUTF(val);
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         val = in.readUTF();
     }
 
@@ -57,7 +42,7 @@ public class NBTString extends NBTObject<String> {
     public String toString() {
         return new StringJoiner(", ", NBTString.class.getSimpleName() + "[", "]")
                 .add("val='" + val + "'")
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

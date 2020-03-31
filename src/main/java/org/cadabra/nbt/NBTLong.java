@@ -6,27 +6,16 @@ import org.cadabra.nbt.io.NBTOutputStream;
 import java.io.IOException;
 import java.util.StringJoiner;
 
-public class NBTLong extends NBTObject<Long> {
+public final class NBTLong extends NBTObject {
 
     private final static TagType TAG = TagType.TAG_LONG;
 
     private long val = 0;
 
-    private NBTLong(String name) {
+    NBTLong(String name) {
         super(TAG.getID(), name);
     }
 
-    private NBTLong() {
-        super(TAG.getID());
-    }
-
-    public static NBTLong unnamed() {
-        return new NBTLong();
-    }
-
-    public static NBTLong named(String name) {
-        return new NBTLong(name);
-    }
 
     public long get() {
         return val;
@@ -39,22 +28,12 @@ public class NBTLong extends NBTObject<Long> {
     }
 
     @Override
-    public Long getValue() {
-        return get();
-    }
-
-    @Override
-    public Long setValue(Long e) {
-        return set(e);
-    }
-
-    @Override
-    public void writeBody(NBTOutputStream out) throws IOException {
+    protected void writeBody(NBTOutputStream out) throws IOException {
         out.writeLong(val);
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         val = in.readLong();
     }
 
@@ -62,7 +41,7 @@ public class NBTLong extends NBTObject<Long> {
     public String toString() {
         return new StringJoiner(", ", NBTLong.class.getSimpleName() + "[", "]")
                 .add("val=" + val)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

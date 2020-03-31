@@ -6,26 +6,14 @@ import org.cadabra.nbt.io.NBTOutputStream;
 import java.io.IOException;
 import java.util.StringJoiner;
 
-public class NBTDouble extends NBTObject<Double> {
+public final class NBTDouble extends NBTObject {
 
     private final static TagType TAG = TagType.TAG_DOUBLE;
 
     private double val = 0;
 
-    private NBTDouble(String name) {
+    NBTDouble(String name) {
         super(TAG.getID(), name);
-    }
-
-    private NBTDouble() {
-        super(TAG.getID());
-    }
-
-    public static NBTDouble unnamed() {
-        return new NBTDouble();
-    }
-
-    public static NBTDouble named(String name) {
-        return new NBTDouble(name);
     }
 
     public double get() {
@@ -39,22 +27,12 @@ public class NBTDouble extends NBTObject<Double> {
     }
 
     @Override
-    public Double getValue() {
-        return get();
-    }
-
-    @Override
-    public Double setValue(Double e) {
-        return set(e);
-    }
-
-    @Override
-    public void writeBody(NBTOutputStream out) throws IOException {
+    protected void writeBody(NBTOutputStream out) throws IOException {
         out.writeDouble(val);
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    protected void readBody(NBTInputStream in) throws IOException {
         val = in.readDouble();
     }
 
@@ -62,7 +40,7 @@ public class NBTDouble extends NBTObject<Double> {
     public String toString() {
         return new StringJoiner(", ", NBTDouble.class.getSimpleName() + "[", "]")
                 .add("val=" + val)
-                .add("tagID=" + tagID)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

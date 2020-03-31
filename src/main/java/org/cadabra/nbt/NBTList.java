@@ -7,55 +7,34 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static org.cadabra.nbt.NBTFactory.*;
 import static org.cadabra.nbt.TagType.*;
 
-public class NBTList extends NBTObject<List<NBT>> implements Iterable<NBT> {
+public final class NBTList extends NBTObject implements Iterable<NBTObject> {
 
-    private List<NBT> list = new ArrayList<>();
-    private int subTagID = 0;
+    private List<NBTObject> list = new ArrayList<>();
+    private int subTag = 0;
 
-    private NBTList() {
-        super(TAG_LIST.getID());
-    }
-
-    private NBTList(String name) {
+    NBTList(String name) {
         super(TAG_LIST.getID(), name);
     }
 
-    static NBTList unnamed() {
-        return new NBTList();
+    void setSubTag(int subTag) {
+        this.subTag = subTag;
     }
 
-    static NBTList named(String name) {
-        return new NBTList(name);
-    }
-
-    public NBTList unnamed(int subTagID) throws NBTException {
-        NBTList e = unnamed();
-        e.setSubID(subTagID);
-        return e;
-    }
-
-    public NBTList named(String name, int subTagID) throws NBTException {
-        NBTList e = named(name);
-        e.setSubID(subTagID);
-        return e;
-    }
-
-    public void add(NBT e) throws NBTException {
+    public void add(NBTObject e) throws NBTException {
         Objects.requireNonNull(e);
-        checkNBT(e);
+        checkFormat(e);
         list.add(e);
     }
 
-    public NBT set(int index, NBT e) throws NBTException {
+    public NBTObject set(int index, NBTObject e) throws NBTException {
         Objects.requireNonNull(e);
-        checkNBT(e);
+        checkFormat(e);
         return list.set(index, e);
     }
 
-    public NBT remove(int index) {
+    public NBTObject remove(int index) {
         return list.remove(index);
     }
 
@@ -63,72 +42,47 @@ public class NBTList extends NBTObject<List<NBT>> implements Iterable<NBT> {
         return list.size();
     }
 
-    private void checkNBT(NBT e) throws NBTException {
+    private void checkFormat(NBTObject e) throws NBTException {
         if (e.isUnnamed())
             throw new NBTException(namedObject(e));
-        if (e.tagID() != subTagID)
-            throw new NBTException(differentTags(subTagID, e));
+        if (e.getTag() != subTag)
+            throw new NBTException(differentTags(subTag, e));
     }
 
-    @Override
-    List<NBT> getValue() {
-        return list;
-    }
-
-    @Override
-    List<NBT> setValue(List<NBT> e) {
-        Objects.requireNonNull(e);
-        List<NBT> oldList = list;
-        list = e;
-        return oldList;
-    }
-
-    private void setSubID(int tagID) throws NBTException {
-        assert subTagID == 0;
-        checkTagID(tagID);
-        subTagID = tagID;
-    }
-
-    private static void checkTagID(int tagID) throws NBTException {
-        checkRange(tagID);
-        if (!containsTagID(tagID)) {
-            throw new NBTException(String.format("TagID: %d not registered", tagID));
-        }
-    }
-
-    private static String namedObject(NBT e) {
+    private static String namedObject(NBTObject e) {
         return "Objects in List must haven't name: " + e;
+    }
+
+    private static String differentTags(int tag, NBTObject e) {
+        return e.getClass().getSimpleName() + " does not match tag " + tag;
     }
 
     @Override
     protected void writeBody(NBTOutputStream out) throws IOException {
-        out.writeByte(subTagID);
+        out.writeByte(subTag);
         out.writeInt(list.size());
-        for (NBT e :
+        for (NBTObject e :
                 list) {
-            if (e.isUnnamed())
-                e.write(out);
-            else
-                throw new IOException(namedObject(e));
+            assert e.isUnnamed();
+            e.write(out);
         }
     }
 
     @Override
-    public void read(NBTInputStream in) throws IOException {
+    public void readBody(NBTInputStream in) throws IOException {
         int subID = in.read();
         int size = in.readInt();
-        ArrayList<NBT> list = new ArrayList<>(size);
-        Supplier<NBT> supp = NBTFactory.getSupp(subID);
+        ArrayList<NBTObject> list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            NBT e = supp.get();
-            e.read(in);
+            NBTObject e = NBTFactory.unnamed(subID);
+            e.readBody(in);
             list.add(e);
         }
         this.list = list;
     }
 
     @Override
-    public Iterator<NBT> iterator() {
+    public Iterator<NBTObject> iterator() {
         return list.iterator();
     }
 
@@ -136,8 +90,8 @@ public class NBTList extends NBTObject<List<NBT>> implements Iterable<NBT> {
     public String toString() {
         return new StringJoiner(", ", NBTList.class.getSimpleName() + "[", "]")
                 .add("list=" + list)
-                .add("subTagID=" + subTagID)
-                .add("tagID=" + tagID)
+                .add("subTagID=" + subTag)
+                .add("tagID=" + tag)
                 .add("name='" + name + "'")
                 .toString();
     }

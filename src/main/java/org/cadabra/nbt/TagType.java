@@ -16,7 +16,7 @@ public enum TagType {
     TAG_LONG_ARRAY(12, null);
 
     private final int ID;
-    private final Class<? extends NBT> clazz;
+    private final Class<? extends NBTObject> clazz;
     private static TagType[] tags;
 
     static {
@@ -35,7 +35,7 @@ public enum TagType {
         return tags[id];
     }
 
-    TagType(int id, Class<? extends NBT> clazz) {
+    TagType(int id, Class<? extends NBTObject> clazz) {
         ID = id;
         this.clazz = clazz;
     }
@@ -44,7 +44,7 @@ public enum TagType {
         return ID;
     }
 
-    public Class<? extends NBT> getAttachedClass() {
+    public Class<? extends NBTObject> getAttachedClass() {
         return clazz;
     }
 }
